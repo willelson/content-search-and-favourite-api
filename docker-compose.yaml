@@ -1,0 +1,38 @@
+services:
+  web:
+    container_name: pixabay_server
+    build: .
+
+    ports:
+      - '3000:3000'
+    environment:
+      PG_DB: ${PG_DB}
+      PG_USER: ${PG_USER}
+      PG_PASSWORD: ${PG_PASSWORD}
+      PG_HOST: ${PG_HOST}
+
+    # Ensure db service is running
+    depends_on:
+      - db
+    restart: always
+    # Override command in Dockerfile as nodemon isn't required
+    command:
+      - node
+      - index.js
+
+  db:
+    # important as this container name is referenced by web service to connect to the postgres database
+    container_name: ${PG_HOST}
+
+    image: postgres:16-alpine
+    ports:
+      - '5432:5432'
+    environment:
+      POSTGRES_DB: ${PG_DB}
+      POSTGRES_PASSWORD: ${PG_PASSWORD}
+      POSTGRES_USER: ${PG_USER}
+    volumes:
+      - db_data:/var/lib/postgresql/data
+
+volumes:
+  db_data: {}
