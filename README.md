@@ -2,6 +2,8 @@
 
 This web application provides an api for users to search for images and videos, then save them as favourites.
 
+Content is sourced from the [Pixabay API](https://pixabay.com/api/docs/), and your own api key must be set up in the environment variables in order to fetch content.
+
 ## Installation
 
 The project is set up to be run using [Docker](https://www.docker.com/).
@@ -17,6 +19,9 @@ PG_PASSWORD=<password>
 
 # Must match db service container name from docker-compose.yaml
 PG_HOST=<db container name>
+
+# Enter the api key from your pixabay account here
+PIXABAY_API_KEY=<pixabay api key>
 ```
 
 Build the web server image
@@ -69,6 +74,7 @@ docker run \
   -e PG_DB=<database name> \
   -e PG_USER=<username> \
   -e PG_HOST=<db container name> \
+  -e PIXABAY_API_KEY=<pixabay api key> \
   -p 3000:3000 \
   -v "$(pwd):/app" \
   -v /app/node_modules \
