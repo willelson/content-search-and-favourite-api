@@ -1,29 +1,30 @@
 const User = require('../models/user');
-const bcrypt = require('bcrypt');
 
 exports.authenticate = async (req, res, next) => {
   // Check for Authorization header
   const authHeader = req.headers['authorization'];
   if (!authHeader) {
-    res.status(401).set('WWW-Authenticate', 'Basic');
+    res
+      .status(401)
+      .set('WWW-Authenticate', 'Basic')
+      .send('Invalid credentials');
     return;
   }
 
   // Decode the 'Authorization' header Base64 value to retrieve email and password
-  const authToken = authHeader.slice(6);
+  const authToken = authHeader.replace('Basic ', '');
   const decodedAuthToken = atob(authToken);
   const [decodedEmail, decodedPasswordHash] = decodedAuthToken.split(':');
 
   // Find user in database
   const user = await User.findOne({ where: { email: decodedEmail } });
 
-  if (!user) {
-    res.status(401).set('WWW-Authenticate', 'Basic');
-    return;
-  }
-
-  if (user.password !== decodedPasswordHash) {
-    res.status(401).set('WWW-Authenticate', 'Basic');
+  // Check user exists and passwords match
+  if (!user || user.password !== decodedPasswordHash) {
+    res
+      .status(401)
+      .set('WWW-Authenticate', 'Basic')
+      .send('Invalid credentials');
     return;
   }
 

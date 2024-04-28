@@ -11,9 +11,8 @@ const app = express();
 app.use(bodyparser.json());
 app.use(bodyparser.urlencoded({ extended: false }));
 
-const authRoutes = require('./routes/auth');
-
-app.use(`${BASE_URL}/auth`, authRoutes);
+app.use(`${BASE_URL}/auth`, require('./routes/auth'));
+app.use(`${BASE_URL}/search`, require('./routes/search'));
 
 const start = async () => {
   await sequelize.sync();
