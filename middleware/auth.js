@@ -29,7 +29,7 @@ exports.authenticate = async (req, res, next) => {
   }
 
   // Add user email to request object to be passed to the controller
-  req.user = { email: decodedEmail };
+  req.user = user;
 
   res.status(200);
   next();

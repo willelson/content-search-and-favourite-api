@@ -13,6 +13,7 @@ app.use(bodyparser.urlencoded({ extended: false }));
 
 app.use(`${BASE_URL}/auth`, require('./routes/auth'));
 app.use(`${BASE_URL}/search`, require('./routes/search'));
+app.use(`${BASE_URL}/favourites`, require('./routes/favourites'));
 
 const start = async () => {
   await sequelize.sync();
