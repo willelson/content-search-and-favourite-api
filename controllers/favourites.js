@@ -11,6 +11,7 @@ exports.getFavourites =
     const response = favourites.map((favourite) => {
       const data = favourite.toJSON();
       return {
+        id: data.id,
         pixabayId: data.pixabay_id,
         contentType: data.content_type,
         thumbnail: data.thumbnail_url,
@@ -83,6 +84,29 @@ exports.addFavourite =
 exports.deleteFavourite =
   ('',
   async (req, res, next) => {
-    console.log(`Delete a favourite for authenticated user: ${req.user.email}`);
-    res.status(200).send('test');
+    const { favouriteId } = req.params;
+
+    // TODO Check favouriteId is pass and is a valid number
+
+    // Find record in database with favouriteId
+    const favourite = await Favourite.findOne({
+      where: { id: parseInt(favouriteId) }
+    });
+
+    // Check the favourite exists
+    if (!favourite) {
+      res.status(404).send('Content not found');
+      return;
+    }
+
+    // Check user has this favourite
+    const userHasFavourite = await req.user.hasFavourite(favourite);
+    if (!favourite) {
+      res.status(404).send('Content not found');
+      return;
+    }
+
+    req.user.removeFavourite(favourite);
+
+    res.status(202).send();
   });
