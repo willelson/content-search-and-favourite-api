@@ -39,7 +39,7 @@ exports.register =
     try {
       const { email, password } = req.body;
 
-      // Email and password must be send in the request body
+      // Email and password must be sent in the request body
       if (!email || !password) {
         res.status(400).send('Email and password are required');
         return;
@@ -58,29 +58,27 @@ exports.register =
         return;
       }
 
-      // TODO validate email - this can be done by setting a constaint on the model with seqeulize
-
-      // Check email is not already in use
-      const existingUser = await User.findOne({ where: { email } });
-      if (existingUser) {
-        res.status(400).send('User already exists');
-        return;
-      }
-
       // Prepare password for secure storage
       const salt = await bcrypt.genSalt(10);
       const hashedPassword = await bcrypt.hash(password, salt);
 
-      // Create new user record
-      const user = await User.create({ email, password: hashedPassword });
+      try {
+        // Create a new user record with provided credentials
+        const user = await User.create({ email, password: hashedPassword });
+      } catch (err) {
+        // Handle errors if database contstaints are not met
+        const message = err.errors.map((error) => error.message).join(', ');
+        res.status(400).send(message);
+        return next();
+      }
 
       // Generate user authentication token - onvert email:password to base64
       const token = 'Basic ' + btoa(`${email}:${hashedPassword}`);
 
-      res.status(201).header('Authorization', token).json({
-        message: 'User registered sucessfully',
-        user
-      });
+      res
+        .status(201)
+        .header('Authorization', token)
+        .send('User registered sucessfully');
     } catch (err) {
       console.log(err);
       res.status(500);

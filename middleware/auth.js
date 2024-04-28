@@ -12,20 +12,23 @@ exports.authenticate = async (req, res, next) => {
   // Decode the 'Authorization' header Base64 value to retrieve email and password
   const authToken = authHeader.slice(6);
   const decodedAuthToken = atob(authToken);
-  const [retrievedEmail, retrievedPass] = decodedAuthToken.split(':');
+  const [decodedEmail, decodedPasswordHash] = decodedAuthToken.split(':');
 
   // Find user in database
-  const user = await User.findOne({ where: { email: retrievedEmail } });
+  const user = await User.findOne({ where: { email: decodedEmail } });
 
   if (!user) {
-    res.status(401).send('Invalid credentials');
-    return;
-  }
-
-  if (user.password !== retrievedPass) {
     res.status(401).set('WWW-Authenticate', 'Basic');
     return;
   }
+
+  if (user.password !== decodedPasswordHash) {
+    res.status(401).set('WWW-Authenticate', 'Basic');
+    return;
+  }
+
+  // Add user email to request object to be passed to the controller
+  req.user = { email: decodedEmail };
 
   res.status(200);
   next();
