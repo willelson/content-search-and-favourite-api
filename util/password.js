@@ -2,23 +2,23 @@ exports.validatePassword = (password) => {
   const errors = [];
   const passwordCriteria = [
     {
-      description: 'At least one uppercase character',
+      description: 'password requires at least one uppercase character',
       test: (password) => /[A-Z]/.test(password)
     },
     {
-      description: 'At least one lowercase character',
+      description: 'password requires at least one lowercase character',
       test: (password) => /[a-z]/.test(password)
     },
     {
-      description: 'At least one number',
+      description: 'password requires at least one number',
       test: (password) => /[0-9]/.test(password)
     },
     {
-      description: 'At least one special character',
+      description: 'password requires at least one special character',
       test: (password) => /[^A-Za-z0-9]/.test(password)
     },
     {
-      description: 'A minimum length of 8 characters',
+      description: 'password requires a minimum length of 8 characters',
       test: (password) => password.length >= 8
     }
   ];

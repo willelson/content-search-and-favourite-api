@@ -31,7 +31,7 @@ exports.login =
       // Generate user authentication token - convert "email:password" to base64
       const token = 'Basic ' + btoa(`${email}:${user.password}`);
 
-      res.header('Authorization', token).send(user);
+      res.header('Authorization', token).send({ user: { email: user.email } });
     } catch (err) {
       console.log(err);
       res.status(500).send();
@@ -76,10 +76,7 @@ exports.register =
       // Generate user authentication token - onvert email:password to base64
       const token = 'Basic ' + btoa(`${email}:${hashedPassword}`);
 
-      res
-        .status(201)
-        .header('Authorization', token)
-        .json({ message: 'User registered sucessfully' });
+      res.status(201).header('Authorization', token).json({ user: { email } });
     } catch (err) {
       console.log(err);
       res.status(500).send();
