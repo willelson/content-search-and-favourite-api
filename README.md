@@ -1,6 +1,6 @@
 # Image search and favourite API
 
-This web application provides an api for users to search for images and videos, then save them as favourites.
+This RESTful api enables users to search for images and videos, then save them as favourites.
 
 Content is sourced from the [Pixabay API](https://pixabay.com/api/docs/), and your own api key must be set up in the environment variables in order to fetch content.
 
@@ -35,6 +35,8 @@ Run the services
 ```bash
 docker compose up
 ```
+
+Now that the project is running, the documentation outlining the endpoints and resourses of this RESTful api is hosted at http://localhost/.
 
 ### Development with hot reload
 
