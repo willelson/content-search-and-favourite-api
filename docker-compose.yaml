@@ -35,5 +35,16 @@ services:
     volumes:
       - db_data:/var/lib/postgresql/data
 
+  docs:
+    ports:
+      - '80:8080'
+    environment:
+      SWAGGER_JSON: /app/swagger.json
+
+    image: swaggerapi/swagger-ui
+
+    volumes:
+      - .:/app
+
 volumes:
   db_data: {}

@@ -1,0 +1,464 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "version": "1.0.0",
+    "title": "Pixabay search and favourites",
+    "description": "A RESTful API allowing users to search for photos and videos and save content as favourites."
+  },
+  "host": "localhost:3000",
+  "basePath": "/",
+  "schemes": ["http"],
+  "tags": [
+    {
+      "name": "Auth",
+      "description": "User authentication"
+    },
+    {
+      "name": "Search",
+      "description": "Search for photos and videos from the Pixabay api",
+      "externalDocs": {
+        "url": "https://pixabay.com/api/docs/"
+      }
+    },
+    {
+      "name": "Favourites",
+      "description": "User favourites"
+    }
+  ],
+  "paths": {
+    "/api/v1/auth/login": {
+      "post": {
+        "tags": ["Auth"],
+        "description": "Log in an existing user.",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "email": {
+                  "example": "email"
+                },
+                "password": {
+                  "example": "any"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success - User successfully authenticated, returns object with user information and authentication token in the header.",
+            "examples": {
+              "application/json": {
+                "user": {
+                  "email": "steve.creek@mydomain.net"
+                }
+              }
+            },
+            "headers": {
+              "Authorization": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Basic Authentication token - \"Basic {encoded credentials}\""
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "examples": {
+              "application/json": {
+                "errors": ["email must be a valid email address"]
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - if no token is required, or the token credentials are invalid.",
+            "examples": {
+              "application/json": {
+                "errors": ["Invalid credentials"]
+              }
+            },
+            "headers": {
+              "WWW-Authenticate": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Informs client to authenticate using Basic Authentication"
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
+    "/api/v1/auth/register": {
+      "post": {
+        "tags": ["Auth"],
+        "description": "Register a new user.",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "email": {
+                  "example": "any"
+                },
+                "password": {
+                  "example": "any"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Created - User successfully authenticated, returns object with user information and authentication token in the header.",
+            "examples": {
+              "user": {
+                "email": "steve.creek@mydomain.net"
+              }
+            },
+            "headers": {
+              "Authorization": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Basic Authentication token - \"Basic {encoded credentials}\""
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "examples": {
+              "application/json": {
+                "errors": [
+                  "password requires at least one uppercase character",
+                  "password requires at least one number",
+                  "password requires at least one special character",
+                  "password requires a minimum length of 8 characters"
+                ]
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - if no token is required, or the token credentials are invalid.",
+            "examples": {
+              "application/json": {
+                "errors": ["Invalid credentials"]
+              }
+            },
+            "headers": {
+              "WWW-Authenticate": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Informs client to authenticate using Basic Authentication"
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
+    "/api/v1/search": {
+      "get": {
+        "tags": ["Search"],
+        "description": "",
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "type": "string",
+            "description": "Basic Authentication header.",
+            "required": true
+          },
+          {
+            "name": "query",
+            "in": "query",
+            "type": "string",
+            "description": "Keywords to search for content.",
+            "required": true
+          },
+          {
+            "name": "contentType",
+            "in": "query",
+            "type": "string",
+            "description": "Type of content to search for.",
+            "enum": ["image", "video"],
+            "required": true
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "type": "integer",
+            "description": "Pagination page number."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "examples": {
+              "application/json": {
+                "query": "oranges",
+                "contentType": "image",
+                "page": "2",
+                "resultsPerPage": 20,
+                "total": 35713,
+                "totalHits": 500,
+                "content": [
+                  {
+                    "pixabayId": 7918323,
+                    "contentType": "image",
+                    "thumbnail": "https://cdn.pixabay.com/photo/2023/04/11/22/08/flower-7918323_150.jpg",
+                    "contentURL": "https://pixabay.com/get/g6419c1e3e073614eb05e0b87951bb38a3637d2134093de3fde5ad357fd81c16f51f64d6846f88e3aa5079c40764e170d_640.jpg",
+                    "pixabayURL": "https://pixabay.com/photos/flower-orange-flower-blossom-bloom-7918323/"
+                  },
+                  {
+                    "pixabayId": 3215188,
+                    "contentType": "image",
+                    "thumbnail": "https://cdn.pixabay.com/photo/2018/03/10/20/26/flowers-3215188_150.jpg",
+                    "contentURL": "https://pixabay.com/get/g10e71559af7998c270bbcbdf35a1e44fe88a0507691bf5d478875cd30159a40123fb5ae0fc66f6869e3110aef1da8004_640.jpg",
+                    "pixabayURL": "https://pixabay.com/photos/flowers-orange-orange-petals-3215188/"
+                  }
+                ]
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request - if query parameters fail validation checks",
+            "examples": {
+              "application/json": {
+                "errors": ["query and contentType parameters are required"]
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - if no token is required, or the token credentials are invalid.",
+            "examples": {
+              "application/json": {
+                "errors": ["Invalid credentials"]
+              }
+            },
+            "headers": {
+              "WWW-Authenticate": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Informs client to authenticate using Basic Authentication"
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
+    "/api/v1/favourites/": {
+      "get": {
+        "tags": ["Favourites"],
+        "description": "Get favourite content for the authenticated user.",
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "type": "string",
+            "description": "Basic Authentication header.",
+            "required": true
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "type": "integer",
+            "description": "Pagination page number."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "examples": {
+              "application/json": {
+                "total": 3,
+                "page": 1,
+                "resultsPerPage": 20,
+                "content": [
+                  {
+                    "id": 6,
+                    "pixabayId": 358771,
+                    "contentType": "image",
+                    "thumbnail": "https://cdn.pixabay.com/photo/2014/05/31/08/47/girl-358771_150.jpg",
+                    "contentURL": "https://pixabay.com/get/g395de41faf100e889d728fa819d29e065f25f9a81121afe39648a412049cb771ce331b90b278627cbdd469d651575b3a_640.jpg",
+                    "pixabayURL": "https://pixabay.com/photos/girl-pretty-outdoors-portrait-358771/"
+                  }
+                ]
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "examples": {
+              "application/json": {
+                "errors": ["page must be a valid number"]
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - if no token is required, or the token credentials are invalid.",
+            "examples": {
+              "application/json": {
+                "errors": ["Invalid credentials"]
+              }
+            },
+            "headers": {
+              "WWW-Authenticate": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Informs client to authenticate using Basic Authentication"
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      },
+      "post": {
+        "tags": ["Favourites"],
+        "description": "Add a new favourite to the authenticated users favourite content.",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "contentType": {
+                  "example": "image",
+
+                  "type": "string",
+                  "enum": ["image", "video"]
+                },
+                "pixabayId": {
+                  "example": 137262,
+                  "type": "integer"
+                }
+              }
+            }
+          },
+          {
+            "name": "Authorization",
+            "in": "header",
+            "type": "string",
+            "description": "Basic Authentication header.",
+            "required": true
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Created",
+            "examples": {
+              "application/json": {
+                "message": "Favourite content (id: 616013, type: image) successfully added for user steve.jobs@mydomain.net"
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "examples": {
+              "application/json": {
+                "errors": ["pixabayId must be a valid integer"]
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - if no token is required, or the token credentials are invalid.",
+            "examples": {
+              "application/json": {
+                "errors": ["Invalid credentials"]
+              }
+            },
+            "headers": {
+              "WWW-Authenticate": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Informs client to authenticate using Basic Authentication"
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found - if pixabay returns no results for the pixabayId and contentType provided.",
+            "examples": {
+              "application/json": { "errors": ["Content not found"] }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
+    "/api/v1/favourites/{favouriteId}": {
+      "delete": {
+        "tags": ["Favourites"],
+        "description": "Delete an existing favourite from the authenticated users favourite content.",
+        "parameters": [
+          {
+            "name": "favouriteId",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": "The id of the user favourite (not pixabayId)."
+          },
+          {
+            "name": "Authorization",
+            "in": "header",
+            "type": "string",
+            "description": "Basic Authentication header.",
+            "required": true
+          }
+        ],
+        "responses": {
+          "202": {
+            "description": "Accepted - user favourite has been deleted."
+          },
+          "401": {
+            "description": "Unauthorized - if no token is required, or the token credentials are invalid.",
+            "examples": {
+              "application/json": {
+                "errors": ["Invalid credentials"]
+              }
+            },
+            "headers": {
+              "WWW-Authenticate": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Informs client to authenticate using Basic Authentication"
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found - if the user does not have a favourite with the id provided.",
+            "examples": {
+              "application/json": { "errors": ["Content not found"] }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    }
+  }
+}
