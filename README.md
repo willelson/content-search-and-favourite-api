@@ -18,7 +18,7 @@ PG_USER=<username>
 PG_PASSWORD=<password>
 
 # Must match db service container name from docker-compose.yaml
-PG_HOST=<db container name>
+PG_HOST=pixabay_server
 
 # Enter the api key from your pixabay account here
 PIXABAY_API_KEY=<pixabay api key>
@@ -84,3 +84,17 @@ docker run \
 ```
 
 Now the web server should be listening at `localhost:3000`
+
+## Release Notes
+
+### v1.0
+
+### New features
+
+- User Authentication system using [Basic Authentication](https://developer.mozilla.org/en-US/docs/Web/HTTP/Authentication).
+- Search endpoint for authenticated users to search for images or video and recieve a paginated response.
+- Favourites endpoint for authenticated users to fetch all their saved content with a paginated response, add new favourites, and delete existing favourites.
+
+## Known issues
+
+There are no known issues at this time.
