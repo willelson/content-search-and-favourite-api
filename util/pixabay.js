@@ -66,10 +66,10 @@ exports.contentTypeValid = (contentType) =>
   [IMAGE_TYPE, VIDEO_TYPE].includes(contentType);
 
 /**
- * Page can either be null or an integer
+ * Page can either be undefined or an integer
  */
 exports.pageNumberValid = (page) => {
-  return page === null || isValidInteger(page);
+  return page === undefined || isValidInteger(page);
 };
 
 /**
@@ -90,10 +90,13 @@ exports.fetchContent = async (query, contentType, page) => {
 
   const structuredContent = structurePixabayContent(contentType, hits);
 
+  // Ensure page is returned as a number
+  pageNumber = Number(page) || 1;
+
   return {
     query,
     contentType,
-    page,
+    page: pageNumber,
     resultsPerPage: RESULTS_PER_PAGE,
     total,
     totalHits,
