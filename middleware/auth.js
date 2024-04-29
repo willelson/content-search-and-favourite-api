@@ -8,7 +8,7 @@ exports.authenticate = async (req, res, next) => {
       res
         .status(401)
         .set('WWW-Authenticate', 'Basic')
-        .send('Invalid credentials');
+        .json({ errors: ['Invalid credentials'] });
       return;
     }
 
@@ -25,7 +25,7 @@ exports.authenticate = async (req, res, next) => {
       res
         .status(401)
         .set('WWW-Authenticate', 'Basic')
-        .send('Invalid credentials');
+        .json({ errors: ['Invalid credentials'] });
       return;
     }
 

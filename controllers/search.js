@@ -20,19 +20,23 @@ exports.search =
 
       // Check required parameters are present
       if (!query || !contentType) {
-        res.status(400).send('query and contentType parameters are required');
+        res
+          .status(400)
+          .json({ errors: ['query and contentType parameters are required'] });
         return;
       }
 
       // Check content type is valid
       if (!contentTypeValid(contentType)) {
-        res.status(400).send('contentType must be either video or image');
+        res
+          .status(400)
+          .json({ errors: ['contentType must be either video or image'] });
         return;
       }
 
       // Check page number is valid
       if (!pageNumberValid(page)) {
-        res.status(400).send('page must be a valid number');
+        res.status(400).json({ errors: ['page must be a valid number'] });
         return;
       }
 

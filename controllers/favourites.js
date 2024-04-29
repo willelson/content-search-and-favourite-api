@@ -16,7 +16,7 @@ exports.getFavourites =
 
       // Check page number is valid
       if (!pageNumberValid(page)) {
-        res.status(400).send('page must be a valid number');
+        res.status(400).json({ errors: ['page must be a valid number'] });
         return;
       }
 
@@ -66,21 +66,23 @@ exports.addFavourite =
 
       // Check required parameters are present
       if (!pixabayId || !req.body.contentType) {
-        res
-          .status(400)
-          .send('pixabayId and contentType parameters are required');
+        res.status(400).json({
+          errors: ['pixabayId and contentType parameters are required']
+        });
         return;
       }
 
       // Check content type is valid
       if (!contentTypeValid(req.body.contentType)) {
-        res.status(400).send('contentType must be either video or image');
+        res
+          .status(400)
+          .json({ errors: ['contentType must be either video or image'] });
         return;
       }
 
       // Check pixabayId is a valid number
       if (!pixabayIdValid(pixabayId)) {
-        res.status(400).send('pixabayId must be a valid integer');
+        res.status(400).json({ errors: ['pixabayId must be a valid integer'] });
         return;
       }
 
@@ -99,7 +101,7 @@ exports.addFavourite =
 
         // Return a 404 if no result comes back from Pixabay
         if (!favouriteData) {
-          res.status(404).send('Content not found');
+          res.status(404).json({ errors: ['Content not found'] });
           return;
         }
 
@@ -120,7 +122,7 @@ exports.addFavourite =
 
       // TODO return newly created object as json
       const msg = `Favourite content (id: ${favourite.pixabay_id}, type: ${favourite.content_type}) successfully added for user ${req.user.email}`;
-      res.status(201).send(msg);
+      res.status(201).json({ message: msg });
     } catch (err) {
       console.log(err);
       res.status(500).send();
@@ -141,14 +143,14 @@ exports.deleteFavourite =
 
     // Check the favourite exists
     if (!favourite) {
-      res.status(404).send('Content not found');
+      res.status(404).json({ errors: ['Content not found'] });
       return;
     }
 
     // Check user has this favourite
     const userHasFavourite = await req.user.hasFavourite(favourite);
     if (!favourite) {
-      res.status(404).send('Content not found');
+      res.status(404).json({ errors: ['Content not found'] });
       return;
     }
 
