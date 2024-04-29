@@ -1,14 +1,36 @@
 const User = require('../models/user');
 const Favourite = require('../models/favourite');
-const { fetchContentById, contentTypeValid } = require('../util/pixabay');
+const {
+  fetchContentById,
+  contentTypeValid,
+  pageNumberValid,
+  pixabayIdValid
+} = require('../util/pixabay');
+const { RESULTS_PER_PAGE } = require('../util/constants');
 
 exports.getFavourites =
   ('',
   async (req, res, next) => {
-    // TODO support pagination
-    const favourites = await req.user.getFavourites();
+    const page = req.query.page || 1;
 
-    const response = favourites.map((favourite) => {
+    // Check page number is valid
+    if (!pageNumberValid(page)) {
+      res.status(400).send('page must be a valid number');
+      return;
+    }
+
+    // Define offset to get results for requested page
+    const offset = (page - 1) * RESULTS_PER_PAGE;
+
+    const favourites = await req.user.getFavourites({
+      offset,
+      limit: RESULTS_PER_PAGE
+    });
+
+    const favouritesCount = await req.user.countFavourites();
+
+    // Convert model data into structure to return to the client
+    const favouritesContent = favourites.map((favourite) => {
       const data = favourite.toJSON();
       return {
         id: data.id,
@@ -19,6 +41,13 @@ exports.getFavourites =
         pixabayURL: data.pixabay_url
       };
     });
+
+    const response = {
+      total: favouritesCount,
+      page,
+      resultsPerPage: RESULTS_PER_PAGE,
+      content: favouritesContent
+    };
 
     res.status(200).json(response);
   });

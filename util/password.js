@@ -31,3 +31,8 @@ exports.validatePassword = (password) => {
 
   return errors;
 };
+
+/**
+ * Takes a string or integer as an argument and checks if it's a valid integer
+ */
+exports.isValidInteger = (testCase) => /^\d+$/.test(String(testCase));

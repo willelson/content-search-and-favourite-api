@@ -1,11 +1,8 @@
-const { fetchContent, contentTypeValid } = require('../util/pixabay');
-
-/**
- * Page can either be null or an integer
- */
-const pageNumberValid = (page) => {
-  return page === null || /^\d+$/.test(page);
-};
+const {
+  fetchContent,
+  contentTypeValid,
+  pageNumberValid
+} = require('../util/pixabay');
 
 /**
  * Controller for searching the Pixabay api

@@ -1,4 +1,5 @@
 const { IMAGE_TYPE, VIDEO_TYPE, RESULTS_PER_PAGE } = require('./constants');
+const { isValidInteger } = require('./password');
 
 const buildPixabayBaseUrl = (contentType) => {
   let baseUrl = 'https://pixabay.com/api/';
@@ -63,6 +64,18 @@ const structurePixabayContent = (contentType, hits) => {
  */
 exports.contentTypeValid = (contentType) =>
   [IMAGE_TYPE, VIDEO_TYPE].includes(contentType);
+
+/**
+ * Page can either be null or an integer
+ */
+exports.pageNumberValid = (page) => {
+  return page === null || isValidInteger(page);
+};
+
+/**
+ * Piabay ID must be an integer
+ */
+exports.pixabayIdValid = (id) => isValidInteger(id);
 
 /**
  * Fetch content from Pixabay and structure response to send back to client
