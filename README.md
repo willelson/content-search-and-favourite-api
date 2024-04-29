@@ -10,16 +10,9 @@ The project is set up to be run using [Docker](https://www.docker.com/).
 
 ### Docker compose
 
-The easiest way to run the project is using docker compose. First create a `.env` in the source directory and define the following environment variables. The `PG_HOST` variable should match the container name defined in `docker-compose.yaml` to allow containers to communicate via the docker network using container names.
+The easiest way to run the project is using docker compose. First set up your Pixabay API key in the `.env` file.
 
 ```bash
-PG_DB=<database name>
-PG_USER=<username>
-PG_PASSWORD=<password>
-
-# Must match db service container name from docker-compose.yaml
-PG_HOST=pixabay_server
-
 # Enter the api key from your pixabay account here
 PIXABAY_API_KEY=<pixabay api key>
 ```
@@ -36,7 +29,7 @@ Run the services
 docker compose up
 ```
 
-Now that the project is running, the documentation outlining the endpoints and resourses of this RESTful api is hosted at http://localhost/.
+Now that the project is running, the documentation outlining the endpoints and resourses of this RESTful api is hosted at http://localhost:80.
 
 ### Development with hot reload
 
