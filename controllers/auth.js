@@ -68,7 +68,8 @@ exports.register =
         // TODO check error type is database validation - re throw error if not
 
         // Handle errors if database contstaints are not met
-        res.status(400).json({ errors: err.errors });
+        const errorMessages = err.errors.map((error) => error.message);
+        res.status(400).json({ errors: errorMessages });
         return next();
       }
 
