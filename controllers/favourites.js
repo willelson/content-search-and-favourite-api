@@ -11,107 +11,120 @@ const { RESULTS_PER_PAGE } = require('../util/constants');
 exports.getFavourites =
   ('',
   async (req, res, next) => {
-    const page = req.query.page || 1;
+    try {
+      const page = req.query.page || 1;
 
-    // Check page number is valid
-    if (!pageNumberValid(page)) {
-      res.status(400).send('page must be a valid number');
-      return;
-    }
+      // Check page number is valid
+      if (!pageNumberValid(page)) {
+        res.status(400).send('page must be a valid number');
+        return;
+      }
 
-    // Define offset to get results for requested page
-    const offset = (page - 1) * RESULTS_PER_PAGE;
+      // Define offset to get results for requested page
+      const offset = (page - 1) * RESULTS_PER_PAGE;
 
-    const favourites = await req.user.getFavourites({
-      offset,
-      limit: RESULTS_PER_PAGE
-    });
+      const favourites = await req.user.getFavourites({
+        offset,
+        limit: RESULTS_PER_PAGE
+      });
 
-    const favouritesCount = await req.user.countFavourites();
+      const favouritesCount = await req.user.countFavourites();
 
-    // Convert model data into structure to return to the client
-    const favouritesContent = favourites.map((favourite) => {
-      const data = favourite.toJSON();
-      return {
-        id: data.id,
-        pixabayId: data.pixabay_id,
-        contentType: data.content_type,
-        thumbnail: data.thumbnail_url,
-        contentURL: data.content_url,
-        pixabayURL: data.pixabay_url
+      // Convert model data into structure to return to the client
+      const favouritesContent = favourites.map((favourite) => {
+        const data = favourite.toJSON();
+        return {
+          id: data.id,
+          pixabayId: data.pixabay_id,
+          contentType: data.content_type,
+          thumbnail: data.thumbnail_url,
+          contentURL: data.content_url,
+          pixabayURL: data.pixabay_url
+        };
+      });
+
+      const response = {
+        total: favouritesCount,
+        page,
+        resultsPerPage: RESULTS_PER_PAGE,
+        content: favouritesContent
       };
-    });
 
-    const response = {
-      total: favouritesCount,
-      page,
-      resultsPerPage: RESULTS_PER_PAGE,
-      content: favouritesContent
-    };
-
-    res.status(200).json(response);
+      res.status(200).json(response);
+    } catch (err) {
+      console.log(err);
+      res.status(500).send();
+    }
   });
 
 exports.addFavourite =
   ('',
   async (req, res, next) => {
-    // request body should include pixabay content ID
-    const { pixabayId } = req.body;
+    try {
+      // request body should include pixabay content ID
+      const { pixabayId } = req.body;
 
-    // Check required parameters are present
-    if (!pixabayId || !req.body.contentType) {
-      res.status(400).send('pixabayId and contentType parameters are required');
-      return;
-    }
-
-    // Check content type is valid
-    if (!contentTypeValid(req.body.contentType)) {
-      res.status(400).send('contentType must be either video or image');
-      return;
-    }
-
-    // Check pixabayId is a valid number
-    if (!pixabayIdValid(pixabayId)) {
-      res.status(400).send('pixabayId must be a valid integer');
-      return;
-    }
-
-    // Check if a favourite with this ID already exists in the table
-    let favourite = await Favourite.findOne({
-      where: { pixabay_id: pixabayId, content_type: req.body.contentType }
-    });
-
-    // If not, fetch content data from Pixabay api
-    let favouriteData = {};
-    if (!favourite) {
-      const favouriteData = await fetchContentById(
-        pixabayId,
-        req.body.contentType
-      );
-
-      // Return a 404 if no result comes back from Pixabay
-      if (!favouriteData) {
-        res.status(404).send('Content not found');
+      // Check required parameters are present
+      if (!pixabayId || !req.body.contentType) {
+        res
+          .status(400)
+          .send('pixabayId and contentType parameters are required');
         return;
       }
 
-      const { contentType, thumbnail, contentURL, pixabayURL } = favouriteData;
+      // Check content type is valid
+      if (!contentTypeValid(req.body.contentType)) {
+        res.status(400).send('contentType must be either video or image');
+        return;
+      }
 
-      favourite = await Favourite.create({
-        pixabay_id: favouriteData.pixabayId,
-        content_type: contentType,
-        thumbnail_url: thumbnail,
-        content_url: contentURL,
-        pixabay_url: pixabayURL
+      // Check pixabayId is a valid number
+      if (!pixabayIdValid(pixabayId)) {
+        res.status(400).send('pixabayId must be a valid integer');
+        return;
+      }
+
+      // Check if a favourite with this ID already exists in the table
+      let favourite = await Favourite.findOne({
+        where: { pixabay_id: pixabayId, content_type: req.body.contentType }
       });
+
+      // If not, fetch content data from Pixabay api
+      let favouriteData = {};
+      if (!favourite) {
+        const favouriteData = await fetchContentById(
+          pixabayId,
+          req.body.contentType
+        );
+
+        // Return a 404 if no result comes back from Pixabay
+        if (!favouriteData) {
+          res.status(404).send('Content not found');
+          return;
+        }
+
+        const { contentType, thumbnail, contentURL, pixabayURL } =
+          favouriteData;
+
+        favourite = await Favourite.create({
+          pixabay_id: favouriteData.pixabayId,
+          content_type: contentType,
+          thumbnail_url: thumbnail,
+          content_url: contentURL,
+          pixabay_url: pixabayURL
+        });
+      }
+
+      // Add favourite to the users favourites
+      await req.user.addFavourite(favourite);
+
+      // TODO return newly created object as json
+      const msg = `Favourite content (id: ${favourite.pixabay_id}, type: ${favourite.content_type}) successfully added for user ${req.user.email}`;
+      res.status(201).send(msg);
+    } catch (err) {
+      console.log(err);
+      res.status(500).send();
     }
-
-    // Add favourite to the users favourites
-    await req.user.addFavourite(favourite);
-
-    // TODO return newly created object as json
-    const msg = `Favourite content (id: ${favourite.pixabay_id}, type: ${favourite.content_type}) successfully added for user ${req.user.email}`;
-    res.status(201).send(msg);
   });
 
 exports.deleteFavourite =

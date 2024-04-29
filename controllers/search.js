@@ -15,26 +15,31 @@ const {
 exports.search =
   ('',
   async (req, res, next) => {
-    const { query, contentType, page } = req.query;
+    try {
+      const { query, contentType, page } = req.query;
 
-    // Check required parameters are present
-    if (!query || !contentType) {
-      res.status(400).send('query and contentType parameters are required');
-      return;
+      // Check required parameters are present
+      if (!query || !contentType) {
+        res.status(400).send('query and contentType parameters are required');
+        return;
+      }
+
+      // Check content type is valid
+      if (!contentTypeValid(contentType)) {
+        res.status(400).send('contentType must be either video or image');
+        return;
+      }
+
+      // Check page number is valid
+      if (!pageNumberValid(page)) {
+        res.status(400).send('page must be a valid number');
+        return;
+      }
+
+      const data = await fetchContent(query, contentType, page);
+      res.status(200).json(data);
+    } catch (err) {
+      console.log(err);
+      res.status(500).send();
     }
-
-    // Check content type is valid
-    if (!contentTypeValid(contentType)) {
-      res.status(400).send('contentType must be either video or image');
-      return;
-    }
-
-    // Check page number is valid
-    if (!pageNumberValid(page)) {
-      res.status(400).send('page must be a valid number');
-      return;
-    }
-
-    const data = await fetchContent(query, contentType, page);
-    res.status(200).json(data);
   });

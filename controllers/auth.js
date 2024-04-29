@@ -5,32 +5,37 @@ const validator = require('../util/password');
 exports.login =
   ('/login',
   async (req, res) => {
-    const { email, password } = req.body;
+    try {
+      const { email, password } = req.body;
 
-    // Email and password must be in the request body
-    if (!email || !password) {
-      res.status(400).send('Email and password are required');
-      return;
+      // Email and password must be in the request body
+      if (!email || !password) {
+        res.status(400).send('Email and password are required');
+        return;
+      }
+
+      // Get user from database
+      const user = await User.findOne({ where: { email } });
+      if (!user) {
+        res.status(401).send('Invalid credentials');
+        return;
+      }
+
+      // Check password matches database record
+      const passwordValid = await bcrypt.compare(password, user.password);
+      if (!passwordValid) {
+        res.status(401).send('Invalid credentials');
+        return;
+      }
+
+      // Generate user authentication token - convert "email:password" to base64
+      const token = 'Basic ' + btoa(`${email}:${user.password}`);
+
+      res.header('Authorization', token).send(user);
+    } catch (err) {
+      console.log(err);
+      res.status(500).send();
     }
-
-    // Get user from database
-    const user = await User.findOne({ where: { email } });
-    if (!user) {
-      res.status(401).send('Invalid credentials');
-      return;
-    }
-
-    // Check password matches database record
-    const passwordValid = await bcrypt.compare(password, user.password);
-    if (!passwordValid) {
-      res.status(401).send('Invalid credentials');
-      return;
-    }
-
-    // Generate user authentication token - convert "email:password" to base64
-    const token = 'Basic ' + btoa(`${email}:${user.password}`);
-
-    res.header('Authorization', token).send(user);
   });
 
 exports.register =
@@ -81,6 +86,6 @@ exports.register =
         .send('User registered sucessfully');
     } catch (err) {
       console.log(err);
-      res.status(500);
+      res.status(500).send();
     }
   });
