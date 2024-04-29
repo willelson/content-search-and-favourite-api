@@ -55,12 +55,12 @@ exports.getFavourites =
 exports.addFavourite =
   ('',
   async (req, res, next) => {
-    // request body should include favourite ID
-    const { contentId } = req.body;
+    // request body should include pixabay content ID
+    const { pixabayId } = req.body;
 
     // Check required parameters are present
-    if (!contentId || !req.body.contentType) {
-      res.status(400).send('contentId and contentType parameters are required');
+    if (!pixabayId || !req.body.contentType) {
+      res.status(400).send('pixabayId and contentType parameters are required');
       return;
     }
 
@@ -70,18 +70,22 @@ exports.addFavourite =
       return;
     }
 
-    // TODO Check contentId is a valid number
+    // Check pixabayId is a valid number
+    if (!pixabayIdValid(pixabayId)) {
+      res.status(400).send('pixabayId must be a valid integer');
+      return;
+    }
 
     // Check if a favourite with this ID already exists in the table
     let favourite = await Favourite.findOne({
-      where: { pixabay_id: contentId, content_type: req.body.contentType }
+      where: { pixabay_id: pixabayId, content_type: req.body.contentType }
     });
 
     // If not, fetch content data from Pixabay api
+    let favouriteData = {};
     if (!favourite) {
-      console.log('need to fetch this favourite from the api');
       const favouriteData = await fetchContentById(
-        contentId,
+        pixabayId,
         req.body.contentType
       );
 
@@ -91,11 +95,10 @@ exports.addFavourite =
         return;
       }
 
-      const { pixabayId, contentType, thumbnail, contentURL, pixabayURL } =
-        favouriteData;
+      const { contentType, thumbnail, contentURL, pixabayURL } = favouriteData;
 
       favourite = await Favourite.create({
-        pixabay_id: pixabayId,
+        pixabay_id: favouriteData.pixabayId,
         content_type: contentType,
         thumbnail_url: thumbnail,
         content_url: contentURL,
@@ -106,7 +109,8 @@ exports.addFavourite =
     // Add favourite to the users favourites
     await req.user.addFavourite(favourite);
 
-    const msg = `Favourite content (id: ${favourite.pixabay_id}, type: ${favourite.contentType}) successfully added for user ${req.user.email}`;
+    // TODO return newly created object as json
+    const msg = `Favourite content (id: ${favourite.pixabay_id}, type: ${favourite.content_type}) successfully added for user ${req.user.email}`;
     res.status(201).send(msg);
   });
 
