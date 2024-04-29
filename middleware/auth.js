@@ -12,10 +12,20 @@ exports.authenticate = async (req, res, next) => {
       return;
     }
 
-    // Decode the 'Authorization' header Base64 value to retrieve email and password
-    const authToken = authHeader.replace('Basic ', '');
-    const decodedAuthToken = atob(authToken);
-    const [decodedEmail, decodedPasswordHash] = decodedAuthToken.split(':');
+    let decodedEmail, decodedPasswordHash;
+    try {
+      // Decode the 'Authorization' header Base64 value to retrieve email and password
+      const authToken = authHeader.replace('Basic ', '');
+      const decodedAuthToken = atob(authToken);
+      [decodedEmail, decodedPasswordHash] = decodedAuthToken.split(':');
+    } catch {
+      // Credentials are invalid if token cannot be decoded
+      res
+        .status(401)
+        .set('WWW-Authenticate', 'Basic')
+        .json({ errors: ['Invalid credentials'] });
+      return;
+    }
 
     // Find user in database
     const user = await User.findOne({ where: { email: decodedEmail } });
