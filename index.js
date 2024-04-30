@@ -15,6 +15,11 @@ app.use(`${BASE_URL}/auth`, require('./routes/auth'));
 app.use(`${BASE_URL}/search`, require('./routes/search'));
 app.use(`${BASE_URL}/favourites`, require('./routes/favourites'));
 
+app.use((err, req, res, next) => {
+  console.log(err.message);
+  res.status(500).send();
+});
+
 const start = async () => {
   await sequelize.sync();
   app.listen(port, console.log(`server running on port ${port}`));
