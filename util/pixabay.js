@@ -1,5 +1,6 @@
 const { IMAGE_TYPE, VIDEO_TYPE, RESULTS_PER_PAGE } = require('./constants');
 const { isValidInteger } = require('./password');
+const { NotFoundError, BadRequestError } = require('./errors');
 
 const buildPixabayBaseUrl = (contentType) => {
   let baseUrl = 'https://pixabay.com/api/';
@@ -84,8 +85,18 @@ exports.fetchContent = async (query, contentType, page) => {
   const url = buildPixabaySearchUrl(query, contentType, page);
 
   const response = await fetch(url);
-  const data = await response.json();
 
+  if (response.status === 400) {
+    const message = await response.text();
+    throw new BadRequestError(message);
+  }
+
+  if (response.status === 404) {
+    const message = await response.text();
+    throw new NotFoundError(message);
+  }
+
+  const data = await response.json();
   const { total, totalHits, hits } = data;
 
   const structuredContent = structurePixabayContent(contentType, hits);
@@ -115,8 +126,15 @@ exports.fetchContentById = async (id, contentType) => {
 
   const response = await fetch(url);
 
-  // Return null if id returns no results
-  if (response.status === 404) return null;
+  if (response.status === 400) {
+    const message = await response.text();
+    throw new BadRequestError(message);
+  }
+
+  if (response.status === 404) {
+    const message = await response.text();
+    throw new NotFoundError(message);
+  }
 
   const data = await response.json();
   const structuredContent = structurePixabayContent(contentType, data.hits);

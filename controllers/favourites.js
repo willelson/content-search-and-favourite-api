@@ -88,10 +88,11 @@ exports.addFavourite =
     // If not, fetch content data from Pixabay api
     let favouriteData = {};
     if (!favourite) {
-      const favouriteData = await fetchContentById(
-        pixabayId,
-        req.body.contentType
-      );
+      try {
+        favouriteData = await fetchContentById(pixabayId, req.body.contentType);
+      } catch (err) {
+        return next(err);
+      }
 
       // Return a 404 if no result comes back from Pixabay
       if (!favouriteData) {

@@ -39,6 +39,10 @@ exports.search =
       return;
     }
 
-    const data = await fetchContent(query, contentType, page);
-    res.status(200).json(data);
+    try {
+      const data = await fetchContent(query, contentType, page, next);
+      res.status(200).json(data);
+    } catch (err) {
+      return next(err);
+    }
   });
