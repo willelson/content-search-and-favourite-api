@@ -80,7 +80,7 @@ Now the web server should be listening at `localhost:3000`
 
 ## Release Notes
 
-### v1.0
+### v1.0.0
 
 ### New features
 
@@ -90,4 +90,4 @@ Now the web server should be listening at `localhost:3000`
 
 ## Known issues
 
-There are no known issues at this time.
+Check the open [issues](https://github.com/willelson/content-search-and-favourite-api/issues).
