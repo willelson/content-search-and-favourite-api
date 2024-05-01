@@ -17,6 +17,17 @@ class NotFoundError extends CustomRequestError {
   }
 }
 
-exports.CustomRequestError = CustomRequestError;
+const globalErrorHandler = (err, req, res, next) => {
+  if (err instanceof CustomRequestError) {
+    res.status(err.status).send(err.message);
+    return;
+  } else {
+    console.log(err.message);
+    res.status(500).send();
+    return;
+  }
+};
+
 exports.BadRequestError = BadRequestError;
 exports.NotFoundError = NotFoundError;
+exports.globalErrorHandler = globalErrorHandler;
