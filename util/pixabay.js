@@ -10,6 +10,7 @@ const buildPixabayBaseUrl = (contentType) => {
 
   return baseUrl;
 };
+
 /**
  * Build appriate URL for the content type
  */
@@ -142,3 +143,5 @@ exports.fetchContentById = async (id, contentType) => {
   // After querying by ID we will only recieve 1 result
   return structuredContent[0];
 };
+
+exports.buildPixabayBaseUrl = buildPixabayBaseUrl;
