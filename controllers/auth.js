@@ -1,4 +1,6 @@
 const bcrypt = require('bcrypt');
+const Sequelize = require('sequelize');
+
 const User = require('../models/user');
 const validator = require('../util/password');
 
@@ -55,12 +57,14 @@ exports.register = async (req, res, next) => {
     // Create a new user record with provided credentials
     const user = await User.create({ email, password: hashedPassword });
   } catch (err) {
-    // TODO check error type is database validation - re throw error if not
-
     // Handle errors if database contstaints are not met
-    const errorMessages = err.errors.map((error) => error.message);
-    res.status(400).json({ errors: errorMessages });
-    return next();
+    if (err instanceof Sequelize.ValidationError) {
+      const errorMessages = err.errors.map((error) => error.message);
+      res.status(400).json({ errors: errorMessages });
+      return next();
+    } else {
+      return next(err);
+    }
   }
 
   // Generate user authentication token - onvert email:password to base64
