@@ -80,9 +80,18 @@ Now the web server should be listening at `localhost:3000`
 
 ## Release Notes
 
+### v1.0.1
+
+#### New features
+
+- Add unit test, including mocks for Pixabay requests.
+- Improved error handling.
+- Fix bug when requesting IDs from Pixabay that don't exist.
+- Expose Authorization header for use by frontend applications.
+
 ### v1.0.0
 
-### New features
+#### New features
 
 - User Authentication system using [Basic Authentication](https://developer.mozilla.org/en-US/docs/Web/HTTP/Authentication).
 - Search endpoint for authenticated users to search for images or video and recieve a paginated response.
