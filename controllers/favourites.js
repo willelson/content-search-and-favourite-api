@@ -42,9 +42,12 @@ exports.getFavourites =
       };
     });
 
+    // Ensure page is returned as a number
+    pageNumber = Number(page) || 1;
+
     const response = {
       total: favouritesCount,
-      page,
+      page: pageNumber,
       resultsPerPage: RESULTS_PER_PAGE,
       content: favouritesContent
     };
