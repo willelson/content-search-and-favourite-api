@@ -1,6 +1,7 @@
 const { IMAGE_TYPE, VIDEO_TYPE, RESULTS_PER_PAGE } = require('./constants');
 const { isValidInteger } = require('./password');
 const { NotFoundError, BadRequestError } = require('./errors');
+const { redis } = require('../index');
 
 const buildPixabayBaseUrl = (contentType) => {
   let baseUrl = 'https://pixabay.com/api/';
@@ -80,24 +81,61 @@ exports.pageNumberValid = (page) => {
 exports.pixabayIdValid = (id) => isValidInteger(id);
 
 /**
+ * Build cache key from query prameters
+ *
+ * @param {string} query
+ * @param {string} contentType
+ * @param {number} page
+ * @returns {string} cache key
+ */
+const buildCacheKey = (query, contentType, page = 1) =>
+  `query=${query}&contentType=${contentType}&page=${page}`;
+
+/**
+ * Check if key is stored in the cache
+ *
+ * @param {string} cacheKey
+ * @return {object|null}
+ */
+const checkCache = async (cacheKey) => {
+  const result = await redis.get(cacheKey, (err, result) => {
+    if (err) {
+      console.error(err);
+      return null;
+    } else {
+      return result;
+    }
+  });
+
+  if (result === null) return null;
+  else return JSON.parse(result);
+};
+
+/**
  * Fetch content from Pixabay and structure response to send back to client
  */
 exports.fetchContent = async (query, contentType, page) => {
-  const url = buildPixabaySearchUrl(query, contentType, page);
+  const cacheKey = buildCacheKey(query, contentType, page);
+  let data = await checkCache(cacheKey);
+  if (data === null) {
+    const url = buildPixabaySearchUrl(query, contentType, page);
 
-  const response = await fetch(url);
+    const response = await fetch(url);
 
-  if (response.status === 400) {
-    const message = await response.text();
-    throw new BadRequestError(message);
+    if (response.status === 400) {
+      const message = await response.text();
+      throw new BadRequestError(message);
+    }
+
+    if (response.status === 404) {
+      const message = await response.text();
+      throw new NotFoundError(message);
+    }
+
+    data = await response.json();
+    await redis.set(cacheKey, JSON.stringify(data));
   }
 
-  if (response.status === 404) {
-    const message = await response.text();
-    throw new NotFoundError(message);
-  }
-
-  const data = await response.json();
   const { total, totalHits, hits } = data;
 
   const structuredContent = structurePixabayContent(contentType, hits);
