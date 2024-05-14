@@ -59,6 +59,15 @@ docker run -d \
   postgres:16-alpine
 ```
 
+Run the redis cache
+```bash
+docker run -d \
+  --name some-redis \
+  --network case-study-network \
+  -p 6379:6379 \
+  redis:7.2.4-alpine
+```
+
 Run the web server container (from project root directory)
 
 ```bash
