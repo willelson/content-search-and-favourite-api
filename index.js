@@ -7,7 +7,7 @@ const auth = require('./middleware/auth');
 const { globalErrorHandler } = require('./util/errors');
 
 const port = 3000;
-const BASE_URL = `/api/v1`;
+const BASE_URL = `/api/v2`;
 const app = express();
 
 app.use(bodyparser.json());

@@ -6,7 +6,7 @@
     "description": "A RESTful API allowing users to search for photos and videos and save content as favourites."
   },
   "host": "localhost:3000",
-  "basePath": "/",
+  "basePath": "/api/v2",
   "schemes": ["http"],
   "tags": [
     {
@@ -26,7 +26,7 @@
     }
   ],
   "paths": {
-    "/api/v1/auth/login": {
+    "/auth/login": {
       "post": {
         "tags": ["Auth"],
         "description": "Log in an existing user.",
@@ -93,7 +93,7 @@
         }
       }
     },
-    "/api/v1/auth/register": {
+    "/auth/register": {
       "post": {
         "tags": ["Auth"],
         "description": "Register a new user.",
@@ -163,7 +163,7 @@
         }
       }
     },
-    "/api/v1/search": {
+    "/search": {
       "get": {
         "tags": ["Search"],
         "description": "Returns the search results from Pixabay. Each item in the content array has a `userFavouriteId` which can either be `null` or an `integer`. If it's an integer, it means this user has favourited this item and this is the ID that uniquely links the content to the user. It can be used with the favourites endpoint to remove this content from the user's favourites.",
@@ -256,7 +256,7 @@
         }
       }
     },
-    "/api/v1/favourites/": {
+    "/favourites/": {
       "get": {
         "tags": ["Favourites"],
         "description": "Get favourite content for the authenticated user.",
@@ -395,7 +395,7 @@
         }
       }
     },
-    "/api/v1/favourites/{userFavouriteId}": {
+    "/favourites/{userFavouriteId}": {
       "delete": {
         "tags": ["Favourites"],
         "description": "Delete an existing favourite from the authenticated users favourite content.",
