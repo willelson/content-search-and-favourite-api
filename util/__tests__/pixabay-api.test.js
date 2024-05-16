@@ -1,4 +1,10 @@
-const pixabay = require('../pixabay');
+const cache = require('../cache');
+
+jest.mock('../cache', () => ({
+  checkCache: jest.fn()
+}));
+
+const { fetchContentById, fetchContent } = require('../pixabay');
 const { NotFoundError, BadRequestError } = require('../errors');
 
 const mockApiResponse = {
@@ -33,6 +39,35 @@ const mockApiResponse = {
       user: 'angelicavaihel',
       userImageURL:
         'https://cdn.pixabay.com/user/2021/03/15/08-35-41-698_250x250.png'
+    },
+    {
+      id: 8609277,
+      pageURL:
+        'https://pixabay.com/photos/magnolia-flowers-white-flowers-8609277/',
+      type: 'photo',
+      tags: 'magnolia, flowers, white flowers',
+      previewURL:
+        'https://cdn.pixabay.com/photo/2024/03/02/19/30/magnolia-8609277_150.jpg',
+      previewWidth: 150,
+      previewHeight: 100,
+      webformatURL:
+        'https://pixabay.com/get/gf0bebc19b5be6cf6773f766ad861194dd676990466706b5d861056b807b2c4b5b0f57b6e5d8847c2b9a31aa5667dd53e_640.jpg',
+      webformatWidth: 640,
+      webformatHeight: 426,
+      largeImageURL:
+        'https://pixabay.com/get/ga9709901e12a928a0e2f0bfcb16aa19547877bf1c9a52da10f4022793d3d922927d46ade0690c1513a3c8cf8fdfc44f58f6421ef392dee759b6264e63cc6f463_1280.jpg',
+      imageWidth: 3937,
+      imageHeight: 2619,
+      imageSize: 1166589,
+      views: 15827,
+      downloads: 13443,
+      collections: 38,
+      likes: 101,
+      comments: 10,
+      user_id: 13713779,
+      user: 'MARTINOPHUC',
+      userImageURL:
+        'https://cdn.pixabay.com/user/2022/03/29/18-54-58-161_250x250.jpg'
     }
   ]
 };
@@ -56,7 +91,7 @@ describe('pixabay.fetchContentById', () => {
     fetch.mockResponse(() => fetchResponse);
 
     try {
-      const data = await pixabay.fetchContentById(id, contentType);
+      const data = await fetchContentById(id, contentType);
     } catch (err) {
       expect(err instanceof NotFoundError).toBe(true);
       expect(err.message).toBe(responseMessage);
@@ -77,7 +112,7 @@ describe('pixabay.fetchContentById', () => {
     fetch.mockResponse(() => fetchResponse);
 
     try {
-      const data = await pixabay.fetchContentById(id, contentType);
+      const data = await fetchContentById(id, contentType);
     } catch (err) {
       expect(err instanceof BadRequestError).toBe(true);
       expect(err.message).toBe(responseMessage);
@@ -90,7 +125,7 @@ describe('pixabay.fetchContentById', () => {
 
     fetch.mockResponseOnce(JSON.stringify(mockApiResponse));
 
-    const data = await pixabay.fetchContentById(id, contentType);
+    const data = await fetchContentById(id, contentType);
     expect(data && typeof data === 'object').toBe(true);
     expect(Object.keys(data)).toContain('pixabayId');
   });
@@ -99,6 +134,7 @@ describe('pixabay.fetchContentById', () => {
 describe('pixabay.fetchContent', () => {
   afterEach(() => {
     fetch.resetMocks();
+    cache.checkCache.mockReset();
   });
 
   test('throws NotFoundError error when Pixabay returns a 404', async () => {
@@ -106,10 +142,7 @@ describe('pixabay.fetchContent', () => {
     const query = 'test';
     const contentType = 'image';
 
-    // Spy on checkCache and set reolved value to null so that pixabay request would be made
-    const checkCacheSpy = jest
-      .spyOn(pixabay, 'checkCache')
-      .mockResolvedValue(null);
+    cache.checkCache.mockResolvedValue(null);
 
     const responseMessage = '[ERROR] 404 Not found';
     fetchResponse = new Promise((resolve, reject) => {
@@ -121,23 +154,18 @@ describe('pixabay.fetchContent', () => {
     fetch.mockResponse(() => fetchResponse);
 
     try {
-      const data = await pixabay.fetchContent(query, contentType, page);
+      const data = await fetchContent(query, contentType, page);
     } catch (err) {
       expect(err instanceof NotFoundError).toBe(true);
       expect(err.message).toBe(responseMessage);
     }
-
-    checkCacheSpy.mockRestore();
   });
 
   test('throws BadRequestError error when Pixabay returns a 400', async () => {
     const query = 'test';
     const contentType = 'image';
 
-    // Spy on checkCache and set reolved value to null so that pixabay request would be made
-    const checkCacheSpy = jest
-      .spyOn(pixabay, 'checkCache')
-      .mockResolvedValue(null);
+    cache.checkCache.mockResolvedValue(null);
 
     const responseMessage = '[ERROR] 400 Bad request';
     fetchResponse = new Promise((resolve, reject) => {
@@ -149,12 +177,29 @@ describe('pixabay.fetchContent', () => {
     fetch.mockResponse(() => fetchResponse);
 
     try {
-      const data = await pixabay.fetchContent(query, contentType);
+      const data = await fetchContent(query, contentType);
     } catch (err) {
       expect(err instanceof BadRequestError).toBe(true);
       expect(err.message).toBe(responseMessage);
     }
+  });
 
-    checkCacheSpy.mockRestore();
+  test('returns cached data and does not make request to pixabay after cache hit', async () => {
+    const query = 'test';
+    const contentType = 'image';
+    cache.checkCache.mockResolvedValue(mockApiResponse);
+
+    const data = await fetchContent(query, contentType);
+
+    // Expect data to contain structured version of mockApiResponse
+    expect(data.content.length).toEqual(2);
+    expect(data.content[0].pixabayId).toBe(7019264);
+    expect(data.content[1].pixabayId).toBe(8609277);
+
+    // Expect checkCache to have been called
+    expect(cache.checkCache.mock.calls.length).toEqual(1);
+
+    // Excpect fetch to not have been called
+    expect(fetch.mock.calls.length).toEqual(0);
   });
 });
