@@ -3,6 +3,7 @@ const {
   contentTypeValid,
   pageNumberValid
 } = require('../util/pixabay');
+const { Op } = require('sequelize');
 
 /**
  * Controller for searching the Pixabay api
@@ -39,6 +40,34 @@ exports.search = async (req, res, next) => {
 
   try {
     const data = await fetchContent(query, contentType, page, next);
+    const { content } = data;
+
+    // Get Pixabay Ids from search results
+    const pixabayIds = content.map((c) => c.pixabayId);
+
+    // Check if user has already favourited any items in the search results
+    const userFavourites = await req.user.getFavourites({
+      where: {
+        pixabay_id: {
+          [Op.in]: pixabayIds
+        },
+        content_type: {
+          [Op.eq]: contentType
+        }
+      }
+    });
+
+    userFavourites.forEach((favourite) => {
+      const favouriteData = favourite.toJSON();
+      // Find the favourite in data.content
+      const index = content.findIndex(
+        (item) => item.pixabayId === favouriteData.pixabay_id
+      );
+
+      // Set the userFavouriteId
+      content[index].userFavouriteId = favouriteData.id;
+    });
+
     res.status(200).json(data);
   } catch (err) {
     return next(err);

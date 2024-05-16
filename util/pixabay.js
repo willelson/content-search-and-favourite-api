@@ -37,7 +37,8 @@ const structureImageHits = (hits) =>
     contentType: IMAGE_TYPE,
     thumbnail: image.previewURL,
     contentURL: image.webformatURL,
-    pixabayURL: image.pageURL
+    pixabayURL: image.pageURL,
+    userFavouriteId: null
   }));
 
 /**
@@ -49,7 +50,8 @@ const structureVideoHits = (hits) =>
     contentType: VIDEO_TYPE,
     thumbnail: video.videos.medium.thumbnail,
     contentURL: video.videos.medium.url,
-    pixabayURL: video.pageURL
+    pixabayURL: video.pageURL,
+    userFavouriteId: null
   }));
 
 const structurePixabayContent = (contentType, hits) => {
