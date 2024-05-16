@@ -1,4 +1,4 @@
-const { fetchContent, fetchContentById } = require('../pixabay');
+const pixabay = require('../pixabay');
 const { NotFoundError, BadRequestError } = require('../errors');
 
 const mockApiResponse = {
@@ -56,7 +56,7 @@ describe('pixabay.fetchContentById', () => {
     fetch.mockResponse(() => fetchResponse);
 
     try {
-      const data = await fetchContentById(id, contentType);
+      const data = await pixabay.fetchContentById(id, contentType);
     } catch (err) {
       expect(err instanceof NotFoundError).toBe(true);
       expect(err.message).toBe(responseMessage);
@@ -77,7 +77,7 @@ describe('pixabay.fetchContentById', () => {
     fetch.mockResponse(() => fetchResponse);
 
     try {
-      const data = await fetchContentById(id, contentType);
+      const data = await pixabay.fetchContentById(id, contentType);
     } catch (err) {
       expect(err instanceof BadRequestError).toBe(true);
       expect(err.message).toBe(responseMessage);
@@ -90,7 +90,7 @@ describe('pixabay.fetchContentById', () => {
 
     fetch.mockResponseOnce(JSON.stringify(mockApiResponse));
 
-    const data = await fetchContentById(id, contentType);
+    const data = await pixabay.fetchContentById(id, contentType);
     expect(data && typeof data === 'object').toBe(true);
     expect(Object.keys(data)).toContain('pixabayId');
   });
@@ -106,6 +106,11 @@ describe('pixabay.fetchContent', () => {
     const query = 'test';
     const contentType = 'image';
 
+    // Spy on checkCache and set reolved value to null so that pixabay request would be made
+    const checkCacheSpy = jest
+      .spyOn(pixabay, 'checkCache')
+      .mockResolvedValue(null);
+
     const responseMessage = '[ERROR] 404 Not found';
     fetchResponse = new Promise((resolve, reject) => {
       resolve({
@@ -116,16 +121,23 @@ describe('pixabay.fetchContent', () => {
     fetch.mockResponse(() => fetchResponse);
 
     try {
-      const data = await fetchContent(query, contentType, page);
+      const data = await pixabay.fetchContent(query, contentType, page);
     } catch (err) {
       expect(err instanceof NotFoundError).toBe(true);
       expect(err.message).toBe(responseMessage);
     }
+
+    checkCacheSpy.mockRestore();
   });
 
   test('throws BadRequestError error when Pixabay returns a 400', async () => {
     const query = 'test';
     const contentType = 'image';
+
+    // Spy on checkCache and set reolved value to null so that pixabay request would be made
+    const checkCacheSpy = jest
+      .spyOn(pixabay, 'checkCache')
+      .mockResolvedValue(null);
 
     const responseMessage = '[ERROR] 400 Bad request';
     fetchResponse = new Promise((resolve, reject) => {
@@ -137,10 +149,12 @@ describe('pixabay.fetchContent', () => {
     fetch.mockResponse(() => fetchResponse);
 
     try {
-      const data = await fetchContent(query, contentType);
+      const data = await pixabay.fetchContent(query, contentType);
     } catch (err) {
       expect(err instanceof BadRequestError).toBe(true);
       expect(err.message).toBe(responseMessage);
     }
+
+    checkCacheSpy.mockRestore();
   });
 });

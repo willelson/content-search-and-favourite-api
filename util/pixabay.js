@@ -119,6 +119,10 @@ const checkCache = async (cacheKey) => {
 exports.fetchContent = async (query, contentType, page) => {
   const cacheKey = buildCacheKey(query, contentType, page);
   let data = await checkCache(cacheKey);
+
+  console.log('checkCache return value...');
+  console.log(data);
+
   if (data === null) {
     const url = buildPixabaySearchUrl(query, contentType, page);
 
@@ -185,3 +189,4 @@ exports.fetchContentById = async (id, contentType) => {
 };
 
 exports.buildPixabayBaseUrl = buildPixabayBaseUrl;
+exports.checkCache = checkCache;
