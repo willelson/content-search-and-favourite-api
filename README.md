@@ -60,6 +60,7 @@ docker run -d \
 ```
 
 Run the redis cache
+
 ```bash
 docker run -d \
   --name some-redis \
@@ -88,6 +89,16 @@ docker run \
 Now the web server should be listening at `localhost:3000`
 
 ## Release Notes
+
+### v2.0.0
+
+#### New features
+
+- Redis cache for Pixabay searches.
+- Search results now include a `userFavouriteId` key, showing whether or not the content has been favourited by the user. This ID can also be used to remove the favourite.
+
+#### Breaking changes
+- Features response has changed the key from `id` to `userFavouriteId`.
 
 ### v1.0.1
 
