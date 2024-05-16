@@ -1,7 +1,7 @@
 const { IMAGE_TYPE, VIDEO_TYPE, RESULTS_PER_PAGE } = require('./constants');
 const { isValidInteger } = require('./password');
 const { NotFoundError, BadRequestError } = require('./errors');
-const { redis } = require('../index');
+const { redis } = require('./cache');
 
 const buildPixabayBaseUrl = (contentType) => {
   let baseUrl = 'https://pixabay.com/api/';

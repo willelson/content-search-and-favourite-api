@@ -1,7 +1,6 @@
 const express = require('express');
 const bodyparser = require('body-parser');
 const cors = require('cors');
-const Redis = require('ioredis');
 
 const sequelize = require('./util/database');
 const auth = require('./middleware/auth');
@@ -10,8 +9,6 @@ const { globalErrorHandler } = require('./util/errors');
 const port = 3000;
 const BASE_URL = `/api/v1`;
 const app = express();
-
-exports.redis = new Redis(6379, process.env.CACHE_NAME);
 
 app.use(bodyparser.json());
 app.use(bodyparser.urlencoded({ extended: false }));
