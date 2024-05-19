@@ -1,6 +1,7 @@
 const { IMAGE_TYPE, VIDEO_TYPE, RESULTS_PER_PAGE } = require('./constants');
 const { isValidInteger } = require('./password');
 const { NotFoundError, BadRequestError } = require('./errors');
+const { redis, checkCache } = require('./cache');
 
 const buildPixabayBaseUrl = (contentType) => {
   let baseUrl = 'https://pixabay.com/api/';
@@ -36,7 +37,8 @@ const structureImageHits = (hits) =>
     contentType: IMAGE_TYPE,
     thumbnail: image.previewURL,
     contentURL: image.webformatURL,
-    pixabayURL: image.pageURL
+    pixabayURL: image.pageURL,
+    userFavouriteId: null
   }));
 
 /**
@@ -48,7 +50,8 @@ const structureVideoHits = (hits) =>
     contentType: VIDEO_TYPE,
     thumbnail: video.videos.medium.thumbnail,
     contentURL: video.videos.medium.url,
-    pixabayURL: video.pageURL
+    pixabayURL: video.pageURL,
+    userFavouriteId: null
   }));
 
 const structurePixabayContent = (contentType, hits) => {
@@ -64,40 +67,59 @@ const structurePixabayContent = (contentType, hits) => {
 /**
  * Only valid content types are "image" or "video"
  */
-exports.contentTypeValid = (contentType) =>
+const contentTypeValid = (contentType) =>
   [IMAGE_TYPE, VIDEO_TYPE].includes(contentType);
 
 /**
  * Page can either be undefined or an integer
  */
-exports.pageNumberValid = (page) => {
+const pageNumberValid = (page) => {
   return page === undefined || isValidInteger(page);
 };
 
 /**
  * Piabay ID must be an integer
  */
-exports.pixabayIdValid = (id) => isValidInteger(id);
+const pixabayIdValid = (id) => isValidInteger(id);
+
+/**
+ * Build cache key from query prameters
+ *
+ * @param {string} query
+ * @param {string} contentType
+ * @param {number} page
+ * @returns {string} cache key
+ */
+const buildCacheKey = (query, contentType, page = 1) =>
+  `query=${query}&contentType=${contentType}&page=${page}`;
 
 /**
  * Fetch content from Pixabay and structure response to send back to client
+ * throws NotFoundError if content is not found on Pixabay
  */
-exports.fetchContent = async (query, contentType, page) => {
-  const url = buildPixabaySearchUrl(query, contentType, page);
+const fetchContent = async (query, contentType, page) => {
+  const cacheKey = buildCacheKey(query, contentType, page);
+  let data = await checkCache(cacheKey);
 
-  const response = await fetch(url);
+  if (data === null) {
+    const url = buildPixabaySearchUrl(query, contentType, page);
 
-  if (response.status === 400) {
-    const message = await response.text();
-    throw new BadRequestError(message);
+    const response = await fetch(url);
+
+    if (response.status === 400) {
+      const message = await response.text();
+      throw new BadRequestError(message);
+    }
+
+    if (response.status === 404) {
+      const message = await response.text();
+      throw new NotFoundError(message);
+    }
+
+    data = await response.json();
+    await redis.set(cacheKey, JSON.stringify(data));
   }
 
-  if (response.status === 404) {
-    const message = await response.text();
-    throw new NotFoundError(message);
-  }
-
-  const data = await response.json();
   const { total, totalHits, hits } = data;
 
   const structuredContent = structurePixabayContent(contentType, hits);
@@ -118,10 +140,9 @@ exports.fetchContent = async (query, contentType, page) => {
 
 /**
  * Fetch content from Pixabay and structure response to send back to client
- *
- * returns null if content is not found on Pixabay
+ * throws NotFoundError if content is not found on Pixabay
  */
-exports.fetchContentById = async (id, contentType) => {
+const fetchContentById = async (id, contentType) => {
   const baseUrl = buildPixabayBaseUrl(contentType);
   const url = `${baseUrl}?key=${process.env.PIXABAY_API_KEY}&id=${id}`;
 
@@ -144,4 +165,12 @@ exports.fetchContentById = async (id, contentType) => {
   return structuredContent[0];
 };
 
-exports.buildPixabayBaseUrl = buildPixabayBaseUrl;
+module.exports = {
+  buildPixabayBaseUrl,
+  checkCache,
+  contentTypeValid,
+  fetchContent,
+  fetchContentById,
+  pageNumberValid,
+  pixabayIdValid
+};

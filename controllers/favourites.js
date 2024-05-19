@@ -33,7 +33,7 @@ exports.getFavourites =
     const favouritesContent = favourites.map((favourite) => {
       const data = favourite.toJSON();
       return {
-        id: data.id,
+        userFavouriteId: data.id,
         pixabayId: data.pixabay_id,
         contentType: data.content_type,
         thumbnail: data.thumbnail_url,

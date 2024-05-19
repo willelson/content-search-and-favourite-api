@@ -1,12 +1,12 @@
 {
   "swagger": "2.0",
   "info": {
-    "version": "1.0.1",
+    "version": "2.0.0",
     "title": "Pixabay search and favourites",
     "description": "A RESTful API allowing users to search for photos and videos and save content as favourites."
   },
   "host": "localhost:3000",
-  "basePath": "/",
+  "basePath": "/api/v2",
   "schemes": ["http"],
   "tags": [
     {
@@ -26,7 +26,7 @@
     }
   ],
   "paths": {
-    "/api/v1/auth/login": {
+    "/auth/login": {
       "post": {
         "tags": ["Auth"],
         "description": "Log in an existing user.",
@@ -89,14 +89,11 @@
                 "description": "Informs client to authenticate using Basic Authentication"
               }
             }
-          },
-          "500": {
-            "description": "Internal Server Error"
           }
         }
       }
     },
-    "/api/v1/auth/register": {
+    "/auth/register": {
       "post": {
         "tags": ["Auth"],
         "description": "Register a new user.",
@@ -162,17 +159,14 @@
                 "description": "Informs client to authenticate using Basic Authentication"
               }
             }
-          },
-          "500": {
-            "description": "Internal Server Error"
           }
         }
       }
     },
-    "/api/v1/search": {
+    "/search": {
       "get": {
         "tags": ["Search"],
-        "description": "",
+        "description": "Returns the search results from Pixabay. Each item in the content array has a `userFavouriteId` which can either be `null` or an `integer`. If it's an integer, it means this user has favourited this item and this is the ID that uniquely links the content to the user. It can be used with the favourites endpoint to remove this content from the user's favourites.",
         "parameters": [
           {
             "name": "Authorization",
@@ -220,14 +214,16 @@
                     "contentType": "image",
                     "thumbnail": "https://cdn.pixabay.com/photo/2023/04/11/22/08/flower-7918323_150.jpg",
                     "contentURL": "https://pixabay.com/get/g6419c1e3e073614eb05e0b87951bb38a3637d2134093de3fde5ad357fd81c16f51f64d6846f88e3aa5079c40764e170d_640.jpg",
-                    "pixabayURL": "https://pixabay.com/photos/flower-orange-flower-blossom-bloom-7918323/"
+                    "pixabayURL": "https://pixabay.com/photos/flower-orange-flower-blossom-bloom-7918323/",
+                    "userFavouriteId": null
                   },
                   {
                     "pixabayId": 3215188,
                     "contentType": "image",
                     "thumbnail": "https://cdn.pixabay.com/photo/2018/03/10/20/26/flowers-3215188_150.jpg",
                     "contentURL": "https://pixabay.com/get/g10e71559af7998c270bbcbdf35a1e44fe88a0507691bf5d478875cd30159a40123fb5ae0fc66f6869e3110aef1da8004_640.jpg",
-                    "pixabayURL": "https://pixabay.com/photos/flowers-orange-orange-petals-3215188/"
+                    "pixabayURL": "https://pixabay.com/photos/flowers-orange-orange-petals-3215188/",
+                    "userFavouriteId": 23
                   }
                 ]
               }
@@ -256,14 +252,11 @@
                 "description": "Informs client to authenticate using Basic Authentication"
               }
             }
-          },
-          "500": {
-            "description": "Internal Server Error"
           }
         }
       }
     },
-    "/api/v1/favourites/": {
+    "/favourites/": {
       "get": {
         "tags": ["Favourites"],
         "description": "Get favourite content for the authenticated user.",
@@ -292,7 +285,7 @@
                 "resultsPerPage": 20,
                 "content": [
                   {
-                    "id": 6,
+                    "userFavouriteId": 6,
                     "pixabayId": 358771,
                     "contentType": "image",
                     "thumbnail": "https://cdn.pixabay.com/photo/2014/05/31/08/47/girl-358771_150.jpg",
@@ -326,9 +319,6 @@
                 "description": "Informs client to authenticate using Basic Authentication"
               }
             }
-          },
-          "500": {
-            "description": "Internal Server Error"
           }
         }
       },
@@ -401,24 +391,21 @@
             "examples": {
               "application/json": { "errors": ["Content not found"] }
             }
-          },
-          "500": {
-            "description": "Internal Server Error"
           }
         }
       }
     },
-    "/api/v1/favourites/{favouriteId}": {
+    "/favourites/{userFavouriteId}": {
       "delete": {
         "tags": ["Favourites"],
         "description": "Delete an existing favourite from the authenticated users favourite content.",
         "parameters": [
           {
-            "name": "favouriteId",
+            "name": "userFavouriteId",
             "in": "path",
             "required": true,
             "type": "string",
-            "description": "The id of the user favourite (not pixabayId)."
+            "description": "The id of the user favourite."
           },
           {
             "name": "Authorization",
@@ -453,9 +440,6 @@
             "examples": {
               "application/json": { "errors": ["Content not found"] }
             }
-          },
-          "500": {
-            "description": "Internal Server Error"
           }
         }
       }

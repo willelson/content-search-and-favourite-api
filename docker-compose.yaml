@@ -11,6 +11,7 @@ services:
       PG_PASSWORD: ${PG_PASSWORD}
       PG_HOST: ${PG_HOST}
       PIXABAY_API_KEY: ${PIXABAY_API_KEY}
+      CACHE_NAME: ${CACHE_NAME}
 
     # Ensure db service is running
     depends_on:
@@ -45,6 +46,13 @@ services:
 
     volumes:
       - .:/app
+
+  cache:
+    container_name: ${CACHE_NAME}
+    ports:
+      - 6379:6379
+
+    image: redis:7.2.4-alpine
 
 volumes:
   db_data: {}
