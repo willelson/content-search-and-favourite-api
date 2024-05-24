@@ -117,7 +117,7 @@ const fetchContent = async (query, contentType, page) => {
     }
 
     data = await response.json();
-    await redis.set(cacheKey, JSON.stringify(data));
+    await redis.set(cacheKey, JSON.stringify(data), 'EX', 1800);
   }
 
   const { total, totalHits, hits } = data;
