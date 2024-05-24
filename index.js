@@ -5,6 +5,7 @@ const cors = require('cors');
 const sequelize = require('./util/database');
 const auth = require('./middleware/auth');
 const { globalErrorHandler } = require('./util/errors');
+const { setupCDN } = require('./util/cdn');
 
 const port = 3000;
 const BASE_URL = `/api/v2`;
@@ -26,6 +27,7 @@ app.use((err, req, res, next) => globalErrorHandler(err, req, res, next));
 
 const start = async () => {
   await sequelize.sync();
+  await setupCDN();
   app.listen(port, console.log(`server running on port ${port}`));
 };
 

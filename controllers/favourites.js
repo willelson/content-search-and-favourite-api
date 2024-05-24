@@ -6,7 +6,8 @@ const {
   pageNumberValid,
   pixabayIdValid
 } = require('../util/pixabay');
-const { RESULTS_PER_PAGE } = require('../util/constants');
+const { RESULTS_PER_PAGE, IMAGE_TYPE } = require('../util/constants');
+const { addToCDN } = require('../util/cdn');
 
 exports.getFavourites =
   ('',
@@ -91,14 +92,15 @@ exports.addFavourite = async (req, res, next) => {
   if (!favourite) {
     try {
       favouriteData = await fetchContentById(pixabayId, req.body.contentType);
+
+      // Change the content URL to point to the object in the CDN bucket
+      favouriteData.contentURL = await addToCDN(
+        pixabayId,
+        req.body.contentType,
+        favouriteData.contentURL
+      );
     } catch (err) {
       return next(err);
-    }
-
-    // Return a 404 if no result comes back from Pixabay
-    if (!favouriteData) {
-      res.status(404).json({ errors: ['Content not found'] });
-      return;
     }
 
     const { contentType, thumbnail, contentURL, pixabayURL } = favouriteData;
