@@ -35,7 +35,7 @@ const structureImageHits = (hits) =>
   hits.map((image) => ({
     pixabayId: image.id,
     contentType: IMAGE_TYPE,
-    thumbnail: image.previewURL,
+    thumbnail: image.webformatURL,
     contentURL: image.webformatURL,
     pixabayURL: image.pageURL,
     userFavouriteId: null
@@ -49,7 +49,7 @@ const structureVideoHits = (hits) =>
     pixabayId: video.id,
     contentType: VIDEO_TYPE,
     thumbnail: video.videos.medium.thumbnail,
-    contentURL: video.videos.medium.url,
+    contentURL: video.videos.medium.thumbnail,
     pixabayURL: video.pageURL,
     userFavouriteId: null
   }));
@@ -117,7 +117,7 @@ const fetchContent = async (query, contentType, page) => {
     }
 
     data = await response.json();
-    await redis.set(cacheKey, JSON.stringify(data));
+    await redis.set(cacheKey, JSON.stringify(data), 'EX', 1800);
   }
 
   const { total, totalHits, hits } = data;

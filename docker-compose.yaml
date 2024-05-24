@@ -12,6 +12,12 @@ services:
       PG_HOST: ${PG_HOST}
       PIXABAY_API_KEY: ${PIXABAY_API_KEY}
       CACHE_NAME: ${CACHE_NAME}
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
+      MINIO_PORT: ${MINIO_PORT}
+      MINIO_HOST: ${MINIO_HOST}
+      MINIO_CDN_HOST: ${MINIO_CDN_HOST}
+      CONTENT_BUCKET_NAME: ${CONTENT_BUCKET_NAME}
 
     # Ensure db service is running
     depends_on:
@@ -54,5 +60,19 @@ services:
 
     image: redis:7.2.4-alpine
 
+  minio:
+    container_name: ${MINIO_HOST}
+    image: minio/minio
+    ports:
+      - '${MINIO_PORT}:${MINIO_PORT}'
+      - '${MINIO_CONSOLE_PORT}:${MINIO_CONSOLE_PORT}'
+    volumes:
+      - minio_storage:/data
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
+    command: server --console-address ":${MINIO_CONSOLE_PORT}" /data
+
 volumes:
   db_data: {}
+  minio_storage: {}
